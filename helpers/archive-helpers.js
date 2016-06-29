@@ -25,17 +25,44 @@ exports.initialize = function(pathsObj) {
 // The following function names are provided to you to suggest how you might
 // modularize your code. Keep it clean!
 
-exports.readListOfUrls = function() {
+exports.readListOfUrls = function(callback) {
+  // maybe for both web & worker, at least definitely for worker to check for what urls to download
+  // read sites.txt file (paths.list)
+  fs.readFile(this.paths.list, function(err, data) {
+    if (err) {
+      console.warn('readListOfUrls error: ', err);
+    } else {
+      data = data.toString();
+      // example1.com\nexample2.com
+      data = data.split('\n');
+      callback(data);
+      // what do we do with this data? 
+    }
+  });
 };
 
-exports.isUrlInList = function() {
+exports.isUrlInList = function(url) {
+  // for web to check if new url from POST 
+  // readListOfUrls to read sites.txt file
+  // return true or false based on match of list; 
+
+
 };
 
-exports.addUrlToList = function() {
+exports.addUrlToList = function(url) {
+  // for web to use to add
+  // appendFile url to sites.txt
 };
 
-exports.isUrlArchived = function() {
+exports.isUrlArchived = function(url) {
+  // for web to check & also for worker to check
+  // check for file in /archives/sites (paths.archivedSites)
+  // return true if found
+  // serve asset as response
 };
 
 exports.downloadUrls = function() {
+  // for workers/htmlfetcher.js
+  // used to download the urls from sites.txt list
+  // writeFile of HTML to archives/sites
 };

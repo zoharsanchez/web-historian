@@ -44,29 +44,42 @@ var handlePost = function(req, res) {
   });
   req.on('end', function() {
     url = url.toString().slice(4);
+    console.log('req: ', url);
 
-    var urlInList = archive.isUrlInList(url, function(exists) {
-      return exists;
-    }); // true or false
+    // is url in list? calling isUrlInList
+    archive.isUrlInList(url, function(exists, url) {
 
-    if (urlInList) {
-      var urlInArchive = archive.isUrlArchived(url, function(exists) {
-        return exists;
-      });
-      if (urlInArchive) {
-        // serve assets
-        var pathName = archive.paths.archivedSites + url;
-        serveAssets(res, pathName, function(data) {
-          sendRes(req, res, 302, data);
-        });
+      console.log('inList: ', url);
+
+      // if yes
+      if (exists) {
+        // is url in archive/sites? calling isUrlArchived
+        archive.isUrlArchived(url, function(exists, url) {
+          console.log('inArchive: ', url);
+
+          if (exists) {
+          // if yes,
+            // serve archived site
+            var pathName = archive.paths.archivedSites + '/' + url;
+            console.log('pathname: ', pathName);
+            serveAssets(res, pathName, function(data) {
+              sendRes(req, res, 302, data);
+            });
+          } else {
+          // if no,
+            // serve loading page, we dont' have it yet, check back soon
+            serveLoadingPage(req, res); 
+          }
+        }); 
       } else {
-        serveLoadingPage(req, res); 
+      // if no
+        // add url to list. calling addUrlToList
+          // serve loading page. 
+        archive.addUrlToList(url, function() {
+          serveLoadingPage(req, res);
+        }); 
       }
-    } else {
-      archive.addUrlToList(url, function() {
-        serveLoadingPage(req, res); 
-      });
-    }
+    });
   });
 };
 

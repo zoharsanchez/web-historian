@@ -2,6 +2,8 @@ var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
 var request = require('request');
+var validUrl = require('valid-url');
+
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -53,15 +55,14 @@ exports.isUrlInList = function(url, callback) {
           exists = true;
         }
       }
-      callback(exists);
+      callback(exists, url);
     }
   });
 };
 
 exports.addUrlToList = function(url, callback) {
-  // for web to use to add
-  // appendFile url to sites.txt
-  var url = url + '\n';
+  // for web/basic-server to use to add url to sites.txt
+  var url = '\n' + url;
   fs.appendFile(this.paths.list, url, function(err) {
     if (err) {
       console.warn('addUrlToList error: ', err);
@@ -76,29 +77,21 @@ exports.isUrlArchived = function(url, callback) {
   // check for file in /archives/sites (paths.archivedSites)
   // return true if found
   // serve asset as response
-  var pathName = this.paths.archivedSites + '/' + url;
+  // var pathName = this.paths.archivedSites + '/' + url;
   // File is not saved as HTML filetype... 
   fs.readdir(this.paths.archivedSites, function(err, fileNames) {
     if (err) {
       console.warn('readdir error: ', err);
     } else {
+      var exists = false;
       if (fileNames.indexOf(url) !== -1) {
-        callback(true);
+        exists = true;
+        callback(exists, url);
       } else {
-        callback(false);
+        callback(exists, url);
       }
     }
   });
-
-  // fs.readFile(pathName, function(err, data) {
-  //   // try using readdir? read directory;
-  //   if (err) {
-  //     callback(false);
-  //     console.warn('isUrlArchived error: ', err);
-  //   } else {
-  //     callback(true);
-  //   }
-  // });
 };
 
 exports.downloadUrls = function(urlArray) {
@@ -108,10 +101,17 @@ exports.downloadUrls = function(urlArray) {
   var archivedSites = this.paths.archivedSites;
   var htmlBody = '';
   for (var i = 0; i < urlArray.length; i++) {
-    var url = 'http://' + urlArray[i];
     var pathName = archivedSites + '/' + urlArray[i];
-    request.get(url).on('error', function(err) {
-      console.warn('downloadUrls stream error', err);
-    }).pipe(fs.createWriteStream(pathName));
+    var url = 'http://' + urlArray[i];
+    // (if first letter is w, then it's www. )
+    if (validUrl.isUri(url)) {
+      console.log(url);
+      console.log(validUrl.isUri(url));
+      request.get(url).on('error', function(err) {
+        console.warn('downloadUrls stream error', err);
+      }).pipe(fs.createWriteStream(pathName));
+    } else {
+      console.warn('Invalid url for download: ', url);
+    }
   }
 };

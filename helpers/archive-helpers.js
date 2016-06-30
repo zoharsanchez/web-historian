@@ -78,15 +78,27 @@ exports.isUrlArchived = function(url, callback) {
   // serve asset as response
   var pathName = this.paths.archivedSites + '/' + url;
   // File is not saved as HTML filetype... 
-  fs.readFile(pathName, function(err, data) {
-    // try using readdir? read directory;
+  fs.readdir(this.paths.archivedSites, function(err, fileNames) {
     if (err) {
-      callback(false);
-      console.warn('isUrlArchived error: ', err);
+      console.warn('readdir error: ', err);
     } else {
-      callback(true);
+      if (fileNames.indexOf(url) !== -1) {
+        callback(true);
+      } else {
+        callback(false);
+      }
     }
   });
+
+  // fs.readFile(pathName, function(err, data) {
+  //   // try using readdir? read directory;
+  //   if (err) {
+  //     callback(false);
+  //     console.warn('isUrlArchived error: ', err);
+  //   } else {
+  //     callback(true);
+  //   }
+  // });
 };
 
 exports.downloadUrls = function(urlArray) {

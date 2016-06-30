@@ -27,7 +27,7 @@ var urlParse = require('url');
 
 var serveLoadingPage = function(req, res) {
   serveAssets(res, siteAssets + '/loading.html', function(data) {
-    sendRes(req, res, 200, data);
+    sendRes(req, res, 302, data);
   });
 };
 
@@ -57,7 +57,7 @@ var handlePost = function(req, res) {
         // serve assets
         var pathName = archive.paths.archivedSites + url;
         serveAssets(res, pathName, function(data) {
-          sendRes(req, res, 200, data);
+          sendRes(req, res, 302, data);
         });
       } else {
         serveLoadingPage(req, res); 

@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
+var request = require('request');
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -41,28 +42,86 @@ exports.readListOfUrls = function(callback) {
   });
 };
 
-exports.isUrlInList = function(url) {
-  // for web to check if new url from POST 
-  // readListOfUrls to read sites.txt file
-  // return true or false based on match of list; 
-
-
+exports.isUrlInList = function(url, callback) {
+  fs.readFile(this.paths.list, function(err, data) {
+    if (err) {
+      console.warn('isUrlInList error: ', err);
+    } else {
+      var exists = false;
+      data = data.toString();
+      data = data.split('\n');
+      for (var i = 0; i < data.length; i++) {
+        if (url === data[i]) {
+          exists = true;
+        }
+      }
+      callback(exists);
+    }
+  });
 };
 
-exports.addUrlToList = function(url) {
+exports.addUrlToList = function(url, callback) {
   // for web to use to add
   // appendFile url to sites.txt
+  var url = url + '\n';
+  fs.appendFile(this.paths.list, url, function(err) {
+    if (err) {
+      console.warn('addUrlToList error: ', err);
+    } else {
+      callback();
+    }
+  });
 };
 
-exports.isUrlArchived = function(url) {
+exports.isUrlArchived = function(url, callback) {
   // for web to check & also for worker to check
   // check for file in /archives/sites (paths.archivedSites)
   // return true if found
   // serve asset as response
+  var pathName = this.paths.archivedSites + '/' + url;
+  fs.readFile(pathName, function(err, data) {
+    if (err) {
+      callback(false);
+      console.warn('isUrlArchived error: ', err);
+    } else {
+      callback(true);
+    }
+  });
 };
 
-exports.downloadUrls = function() {
+exports.downloadUrls = function(urlArray) {
   // for workers/htmlfetcher.js
   // used to download the urls from sites.txt list
   // writeFile of HTML to archives/sites
+  var archivedSites = this.paths.archivedSites;
+  var htmlBody = '';
+  for (var i = 0; i < urlArray.length; i++) {
+    var url = 'http://' + urlArray[i];
+    var pathName = archivedSites + '/' + urlArray[i];
+    request.get(url).on('error', function(err) {
+      console.warn('downloadUrls stream error', err);
+    }).pipe(fs.createWriteStream(pathName));
+    // request(url, function(err, res, body) {
+    //   if (err) {
+    //     console.warn('downloadUrls request error ', err);  
+    //   } else {
+    //     console.log(pathName);
+    //     // one problem is urlArray[i] is undefined
+
+    //     fs.writeFile(pathName, body.toString(), function(err) {
+    //       if (err) {
+    //         console.warn('downloadUrls writeFile error: ', err);
+    //       }
+    //     });
+        // console.log(body.toString());
+        // res.on('data', function(data) {
+        //   htmlBody += data.toString();
+        // })
+        // .on('end', function() {
+        //   fs.writeFile(pathName, htmlBody, function(err) {
+        //   });
+        // });
+    //   }
+    // });
+  }
 };

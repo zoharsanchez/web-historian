@@ -50,6 +50,7 @@ exports.handleRequest = function (req, res) {
   var parts = urlParse.parse(req.url);
   var pathName = parts.pathname;
   var action = actions[req.method];
+  // refactor actions to be individual handler functions like handleGet, handlePost, etc. 
   if (pathName === '/') {
     if (req.method === 'GET') {
       action(req, res, siteAssets + '/index.html');    
@@ -57,6 +58,7 @@ exports.handleRequest = function (req, res) {
       action(req, res);
     }
   } else {
+    // if any other pathName, we should probably be more specific about what action. 
     action(req, res, archive.paths.archivedSites + pathName);
     // instead of using variable name for archivedSites, 
     // we have to type it all out because of tests

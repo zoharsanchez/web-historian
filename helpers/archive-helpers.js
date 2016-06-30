@@ -34,10 +34,8 @@ exports.readListOfUrls = function(callback) {
       console.warn('readListOfUrls error: ', err);
     } else {
       data = data.toString();
-      // example1.com\nexample2.com
       data = data.split('\n');
       callback(data);
-      // what do we do with this data? 
     }
   });
 };
@@ -79,7 +77,9 @@ exports.isUrlArchived = function(url, callback) {
   // return true if found
   // serve asset as response
   var pathName = this.paths.archivedSites + '/' + url;
+  // File is not saved as HTML filetype... 
   fs.readFile(pathName, function(err, data) {
+    // try using readdir? read directory;
     if (err) {
       callback(false);
       console.warn('isUrlArchived error: ', err);
@@ -101,27 +101,5 @@ exports.downloadUrls = function(urlArray) {
     request.get(url).on('error', function(err) {
       console.warn('downloadUrls stream error', err);
     }).pipe(fs.createWriteStream(pathName));
-    // request(url, function(err, res, body) {
-    //   if (err) {
-    //     console.warn('downloadUrls request error ', err);  
-    //   } else {
-    //     console.log(pathName);
-    //     // one problem is urlArray[i] is undefined
-
-    //     fs.writeFile(pathName, body.toString(), function(err) {
-    //       if (err) {
-    //         console.warn('downloadUrls writeFile error: ', err);
-    //       }
-    //     });
-        // console.log(body.toString());
-        // res.on('data', function(data) {
-        //   htmlBody += data.toString();
-        // })
-        // .on('end', function() {
-        //   fs.writeFile(pathName, htmlBody, function(err) {
-        //   });
-        // });
-    //   }
-    // });
   }
 };

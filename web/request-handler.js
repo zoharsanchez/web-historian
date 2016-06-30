@@ -76,6 +76,8 @@ var handlePost = function(req, res) {
         // add url to list. calling addUrlToList
           // serve loading page. 
         archive.addUrlToList(url, function() {
+          // error in POST where if you request a page that already exists,
+          // it'll load, but then also append other weird requests to sites.txt
           serveLoadingPage(req, res);
         }); 
       }
